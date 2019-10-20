@@ -4,6 +4,7 @@
  * @Date: 2019-10-20 14:31:15
  */
 #include <iostream>
+#include <iomanip>
 
 using namespace std;
 
@@ -152,6 +153,35 @@ void test09(){
     }
 }
 
+
+//通过流对象成员函数
+void test10(){
+    int number = 99;
+	cout.width(20);
+	cout.fill('*');
+	cout.setf(ios::left);
+	cout.unsetf(ios::dec); //卸载十进制
+	cout.setf(ios::hex);
+	cout.setf(ios::showbase);
+	cout.unsetf(ios::hex);
+	cout.setf(ios::oct);
+	cout << number << endl;
+}
+
+//使用控制符 要包含头文件<iomanip>
+void test11(){
+
+	int number = 99;
+	cout << setw(20)
+		<< setfill('~')
+		<< setiosflags(ios::showbase)
+		<< setiosflags(ios::left)
+		<< hex
+		<< number
+		<< endl;
+
+}
+
 int main(int argc, char *argv[]){
     // test01();
     // test02();
@@ -161,7 +191,9 @@ int main(int argc, char *argv[]){
     // test06();
     // test07();
     // test08();
-    test09();
+    // test09();
+    // test10();
+    test11();
 
     return 0;
 }
