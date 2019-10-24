@@ -126,20 +126,68 @@ void test02(){
 //自定义数据类型
 class Person{
 public:
-    Person(string name, int age){
+    Person(string name, int age, int height){
         name_ = name;
         age_ = age;
+        height_ = height;
+    }
+    //重载== 让remove可以删除自定义数据类型
+    bool operator==(const Person &p){
+        if(this->name_ == p.name_ && this->age_ == p.age_ && this->height_ == p.height_){
+            return true;
+        }
+        return false;
     }
     string name_;
     int age_;
+    int height_;
 };
 
+//年龄相同, 按身高升序排序
+bool MyComparePerson(const Person &p1, const Person &p2){
+    if(p1.age_ > p2.age_){ //降序排序
+        return true;
+    }
+    else if(p1.age_ == p2.age_){
+        return p1.height_ > p2.height_;
+    }
+    return false;
+}
+
+void test03(){
+    list<Person> l;
+    
+    Person p1("亚瑟", 10, 188);
+    Person p2("德玛西亚", 20, 23);
+    Person p3("火枪", 17, 87);
+    Person p4("小龙", 10, 23234);
+
+    l.push_back(p1);
+    l.push_back(p2);
+    l.push_back(p3);
+    l.push_back(p4);
+
+    //按照年龄排序
+    l.sort(MyComparePerson);
+
+    //遍历
+    for(list<Person>::const_iterator c_it = l.cbegin(); c_it != l.cend(); ++c_it){
+        cout << "姓名: " << c_it->name_ << " 年龄: " << c_it->age_ << " 身高: " << c_it->height_ << endl;
+    }
+    cout << endl;
+
+    l.remove(p3);
+    for(list<Person>::const_iterator c_it = l.cbegin(); c_it != l.cend(); ++c_it){
+        cout << "姓名: " << c_it->name_ << " 年龄: " << c_it->age_ << " 身高: " << c_it->height_ << endl;
+    }
+}
 
 
 int main(int argc, char *argv[])
 {
     // test01();
-    test02();
+    // test02();
+    test03();
 
     return 0;
 }
