@@ -42,7 +42,8 @@ public:
 
 void test01(){
 
-    Person p("张三", "苹果");
+    // Person p("张三", "苹果");
+    Person p;
     //p.m_Phone.m_PhoneName = "三星";
 
 }
