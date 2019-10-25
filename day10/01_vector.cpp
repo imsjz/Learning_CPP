@@ -51,7 +51,7 @@ void test02(){
     // }
 
     //第三种遍历方法
-    for_each(v.begin(), v.end(), MyPrint);
+    for_each(v.begin(), v.end(), MyPrint); //for_each 使用回调函数, 使用函数对象也可以
 }
 
 //操作自定义数据类型
