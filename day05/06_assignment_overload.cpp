@@ -8,7 +8,7 @@
 
 using namespace std;
 
-//一个类默认创建：　默认构造、析构、拷贝构造、operator==赋值运算符　　进行简单的值传递
+//一个类默认创建：　默认构造、析构、拷贝构造、operator=赋值运算符　　进行简单的值传递
 class Person{
 public:
     Person(int a):a_(a){}

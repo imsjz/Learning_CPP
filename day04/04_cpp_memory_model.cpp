@@ -12,12 +12,19 @@ class Person{
 public:
     int m_A; //非静态成员变量,属于对象身上
 
-    void func() {} //非静态成员函数, 不属于对象身上
+    void func() {
+        cout << "类内声明实现" << endl;
+    } //非静态成员函数, 不属于对象身上
     static int m_B; //静态成员变量,不属于对象身上
     static void func2(){}; //静态成员函数,不属于对象
     double m_C;
+    void func3();
 
 };
+
+void Person::func3(){
+    cout << "func3 类内声明, 类外实现" << endl;
+}
 
 void test01(){
 
