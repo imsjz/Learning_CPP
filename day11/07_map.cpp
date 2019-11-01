@@ -34,7 +34,7 @@ map<int, string> mapStu;
 // 第一种 通过pair的方式插入对象
 mapStu.insert(pair<int, string>(3, "小张"));
 // 第二种 通过pair的方式插入对象
-mapStu.inset(make_pair(-1, "校长"));
+mapStu.insert(make_pair(-1, "校长"));
 // 第三种 通过value_type的方式插入对象
 mapStu.insert(map<int, string>::value_type(1, "小李"));
 // 第四种 通过数组的方式插入值
