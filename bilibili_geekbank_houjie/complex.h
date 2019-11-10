@@ -9,65 +9,6 @@
 #include <iostream>
 using namespace std;
 
-class Complex;
-
-inline Complex&
-__doapl(Complex* ths, const Complex &r){
-    ths->re += r.re;
-    ths->im += r.im;
-    return *ths;
-}
-
-inline double
-imag(const Complex &x){
-    return x.imag();
-}
-
-inline double
-real(const Complex &x){
-    return x.real();
-}
-
-inline Complex
-operator+(const Complex& x, const Complex& y){
-    return Complex(real(x) + real(y),
-                    imag(x) + imag(y));
-}
-
-inline Complex
-operator+(const Complex& x, double y){
-    return Complex(real(x) + y,
-                    imag(x));
-}
-
-inline Complex
-operator+(double x, const Complex& y){
-    return Complex(x + real(y),
-                    imag(y));
-}
-
-inline Complex
-operator+(const Complex &x){
-    return x;
-}
-
-inline Complex
-operator-(const Complex &x){
-    return Complex(-real(x), -imag(x));
-}
-
-//共轭复数
-inline Complex
-conj(const Complex &x){
-    return Complex(real(x), -imag(x));
-}
-
-ostream&
-operator<<(ostream &os, const Complex &x){
-    return os << "(" << real(x) << ","
-            << imag(x) << ")";
-}
-
 
 class Complex
 {
@@ -84,16 +25,30 @@ public:
     }
 
 
-private:
+
     double re, im;
-    friend inline Complex& __doapl(Complex* ths, const Complex &r);
+    friend Complex& doapl(Complex* ths, const Complex &r);
 
 };
 
-inline Complex&
-Complex::operator += (const Complex &r){
-    return __doapl(this, r);
-}
+
+
+double imag(const Complex &x);
+
+double real(const Complex &x);
+
+Complex operator+(const Complex& x, const Complex& y);
+
+Complex operator+(const Complex& x, double y);
+
+Complex operator+(double x, const Complex& y);
+
+
+//共轭复数
+Complex conj(const Complex &x);
+
+ostream& operator<<(ostream &os, const Complex &x);
+
 
 
 #endif
