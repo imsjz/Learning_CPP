@@ -9,6 +9,7 @@
 
 using namespace std;
 
+
 class Base{
 public:
     void operator()(int num){
