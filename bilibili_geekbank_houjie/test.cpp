@@ -5,6 +5,7 @@
  */
 #include "complex.h"
 #include <iostream>
+#include <queue>
 
 using namespace std;
 
@@ -19,6 +20,7 @@ void test01(){
 }
 int main(int argc, char *argv[]){
     test01();
+    queue<int> que;
 
     return 0;
 }
