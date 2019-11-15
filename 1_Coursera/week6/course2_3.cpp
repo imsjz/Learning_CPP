@@ -1,0 +1,33 @@
+/*
+ * @Author: sanjayzhong
+ * @Github: https://github.com/sanjayzzzhong
+ * @Date: 2019-07-13 19:11:25
+ */
+#include <iostream>
+using namespace std;
+
+class myclass{
+    public:
+        virtual void hello(){ cout << "hello from myclass" << endl;}
+        virtual void bye(){cout << "bye from myclass" << endl;}
+};
+class son: public myclass{
+    public:
+        void hello() {cout << "hello from son" << endl;}
+        son() {hello();}
+        ~son(){bye();}
+};
+class grandson: public son{
+    public:
+        void hello(){cout << "hello from grandson" << endl;}
+        void bye(){cout << "bye from grandson" << endl;}
+        grandson() {cout << "constructing grandson" << endl;}
+        ~grandson() {cout << "destructing grandson" << endl;}
+};
+int main(){
+    grandson gson;
+    son *pson;
+    pson = &gson;
+    pson->hello();
+    return 0;
+}
