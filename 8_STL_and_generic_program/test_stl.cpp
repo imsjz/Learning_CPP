@@ -11,12 +11,13 @@ using std::cout;
 using std::cin;
 using std::endl;
 using std::string;
+const int MY_RAND_MAX = 32768;
 
 //辅助函数
 long get_a_target_long(){
 long target = 0;
 
-    cout << "target (0~" << RAND_MAX << "):" << endl;
+    cout << "target (0~" << MY_RAND_MAX - 1<< "):" << endl;
     cin >> target;
     return target;
 }
@@ -24,7 +25,7 @@ long target = 0;
 string get_a_target_string(){
 long target = 0;
 char buf[10];
-    cout << "target (0~" << RAND_MAX << "):" << endl;
+    cout << "target (0~" << MY_RAND_MAX - 1<< "):" << endl;
     cin >> target;
     snprintf(buf, 10, "%ld", target);
     return string(buf);
@@ -104,7 +105,7 @@ clock_t timeStart = clock();
     for(long i=0; i< value; ++i)
     {
     	try {
-    		snprintf(buf, 10, "%d", rand());
+    		snprintf(buf, 10, "%d", rand() / MY_RAND_MAX);
         	c.push_back(string(buf));     		
 		}
 		catch(exception& p) {
@@ -177,7 +178,7 @@ clock_t timeStart = clock();
     for(long i=0; i< value; ++i)
     {
     	try {
-    		snprintf(buf, 10, "%d", rand());
+    		snprintf(buf, 10, "%d", rand() % MY_RAND_MAX);
         	c.push_back(string(buf));    	
 		}
 		catch(exception& p) {
@@ -185,7 +186,7 @@ clock_t timeStart = clock();
 			abort();
 		}
 	}
-	cout << "milli-seconds : " << (clock()-timeStart) << endl;		
+	cout << "milli-seconds : " << ((double)(clock() - timeStart) / CLOCKS_PER_SEC) * 1000 << endl;		
 	cout << "list.size()= " << c.size() << endl;
 	cout << "list.max_size()= " << c.max_size() << endl;    //357913941
 	cout << "list.front()= " << c.front() << endl;	
@@ -194,7 +195,7 @@ clock_t timeStart = clock();
 string target = get_a_target_string();		
     timeStart = clock();		
 auto pItem = find(c.begin(), c.end(), target);						
-	cout << "std::find(), milli-seconds : " << (clock()-timeStart) << endl;		
+	cout << "std::find(), milli-seconds : " << ((double)(clock() - timeStart) / CLOCKS_PER_SEC) * 1000 << endl;		
 	
   	if (pItem != c.end())
     	cout << "found, " << *pItem << endl;
@@ -202,20 +203,348 @@ auto pItem = find(c.begin(), c.end(), target);
     	cout << "not found! " << endl;	
     	
     timeStart = clock();		
-	c.sort();						
-	cout << "c.sort(), milli-seconds : " << (clock()-timeStart) << endl;		    	
+	c.sort(); //list本身自带的排序
+	cout << "c.sort(), milli-seconds : " << ((double)(clock() - timeStart) / CLOCKS_PER_SEC) * 1000 << endl;		    	
     	
 	c.clear();
 	// test_moveable(list<MyString>(),list<MyStrNoMove>(), value);								
 }	
 }
 
+//---------------------------------------------------
+#include <forward_list>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay4
+{
+void test_forward_list(long& value)
+{
+	cout << "\ntest_forward_list().......... \n";
+     
+forward_list<string> c;  	
+char buf[10];
+			
+clock_t timeStart = clock();								
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand() / MY_RAND_MAX);
+        	c.push_front(string(buf));  			   		
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;	
+	cout << "forward_list.max_size()= " << c.max_size() << endl;  //536870911
+	cout << "forward_list.front()= " << c.front() << endl;	
+
+
+string target = get_a_target_string();	
+    timeStart = clock();			
+auto pItem = find(c.begin(), c.end(), target);	
+	cout << "std::find(), milli-seconds : " << (clock()-timeStart) << endl;		
+	
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+    	
+    timeStart = clock();		
+	c.sort();						
+	cout << "c.sort(), milli-seconds : " << (clock()-timeStart) << endl;		
+	
+	c.clear();	 
+}											 
+}
+
+//---------------------------------------------------
+#include <deque>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay5
+{
+void test_deque(long& value)
+{
+	cout << "\ntest_deque().......... \n";
+     
+deque<string> c;  	
+char buf[10];
+			
+clock_t timeStart = clock();								
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand() % MY_RAND_MAX);
+        	c.push_back(string(buf));    			 		
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;		
+	cout << "deque.size()= " << c.size() << endl;
+	cout << "deque.front()= " << c.front() << endl;	
+	cout << "deque.back()= " << c.back() << endl;	
+	cout << "deque.max_size()= " << c.max_size() << endl;	//1073741821	
+	
+string target = get_a_target_string();	
+    timeStart = clock();			
+auto pItem = find(c.begin(), c.end(), target);	
+	cout << "std::find(), milli-seconds : " << (clock()-timeStart) << endl;	
+	
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+    	
+    timeStart = clock();		
+	sort(c.begin(), c.end());//用全局的sort						
+	cout << "sort(), milli-seconds : " << (clock()-timeStart) << endl;		
+	
+	c.clear();
+	// test_moveable(deque<MyString>(),deque<MyStrNoMove>(), value);		 						
+}															
+}
+
+//---------------------------------------------------
+#include <set>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay6
+{
+void test_multiset(long& value)
+{
+	cout << "\ntest_multiset().......... \n";
+	
+multiset<string> c;  	
+char buf[10];		
+clock_t timeStart = clock();
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand());
+        	c.insert(string(buf));  //multiset底层是红黑树, 会自动排序, 因此没有push_back等让你指定位置的函数,只有insert让你插入, 但是具体位置你不知道在哪里
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;	
+	cout << "multiset.size()= " << c.size() << endl;	
+	cout << "multiset.max_size()= " << c.max_size() << endl;
+	
+string target = get_a_target_string();	
+	{
+    timeStart = clock();
+auto pItem = find(c.begin(), c.end(), target);	//比 c.find(...) 慢很多	
+	cout << "std::find(), milli-seconds : " << (clock()-timeStart) << endl;		
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+ 	}
+ 	
+ 	{
+    timeStart = clock();		
+auto pItem = c.find(target);		//比 std::find(...) 快很多							
+	cout << "c.find(), milli-seconds : " << (clock()-timeStart) << endl;		 
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+ 	}	
+	 
+	c.clear();
+	// test_moveable(multiset<MyString>(),multiset<MyStrNoMove>(), value);	 						
+}															 
+}
+//---------------------------------------------------
+#include <map>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay7
+{
+void test_multimap(long& value)
+{
+	cout << "\ntest_multimap().......... \n";
+     
+multimap<long, string> c;  	
+char buf[10];
+			
+clock_t timeStart = clock();								
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand());
+    		//multimap 不可使用 [] 做 insertion 
+        	c.insert(pair<long,string>(i,buf));   						
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;	
+	cout << "multimap.size()= " << c.size() << endl;
+	cout << "multimap.max_size()= " << c.max_size() << endl;	//178956970	
+	
+long target = get_a_target_long();		
+    timeStart = clock();		
+auto pItem = c.find(target);//用容器的findd
+	cout << "c.find(), milli-seconds : " << (clock()-timeStart) << endl;	 
+	if (pItem != c.end())
+    	cout << "found, value=" << (*pItem).second << endl;
+  	else
+    	cout << "not found! " << endl;	  
+		
+	c.clear();		  					
+}
+}
+
+//---------------------------------------------------
+#include <unordered_set>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay8
+{
+void test_unordered_multiset(long& value)
+{
+	cout << "\ntest_unordered_multiset().......... \n";
+     
+unordered_multiset<string> c;  	
+char buf[10];
+			
+clock_t timeStart = clock();
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand());
+        	c.insert(string(buf));   			  		
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;		
+	cout << "unordered_multiset.size()= " << c.size() << endl;
+	cout << "unordered_multiset.max_size()= " << c.max_size() << endl;	//357913941
+	cout << "unordered_multiset.bucket_count()= " << c.bucket_count() << endl; //看有几个篮子
+	cout << "unordered_multiset.load_factor()= " << c.load_factor() << endl;	
+	cout << "unordered_multiset.max_load_factor()= " << c.max_load_factor() << endl;	
+	cout << "unordered_multiset.max_bucket_count()= " << c.max_bucket_count() << endl;				
+  	for (unsigned i=0; i< 20; ++i) {
+    	cout << "bucket #" << i << " has " << c.bucket_size(i) << " elements.\n";
+  	}
+				
+string target = get_a_target_string();	
+	{
+    timeStart = clock();
+auto pItem = find(c.begin(), c.end(), target);	//比 c.find(...) 慢很多	
+	cout << "std::find(), milli-seconds : " << (clock()-timeStart) << endl;	
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+ 	}
+ 
+ 	{
+    timeStart = clock();		
+auto pItem = c.find(target);		//比 std::find(...) 快很多							
+	cout << "c.find(), milli-seconds : " << (clock()-timeStart) << endl;	 
+	if (pItem != c.end())
+    	cout << "found, " << *pItem << endl;
+  	else
+    	cout << "not found! " << endl;	
+ 	}		
+	 
+    c.clear();
+	// test_moveable(unordered_multiset<MyString>(),unordered_multiset<MyStrNoMove>(), value);		 	 							
+}
+}
+//---------------------------------------------------
+#include <unordered_map>
+#include <stdexcept>
+#include <string>
+#include <cstdlib> //abort()
+#include <cstdio>  //snprintf()
+#include <iostream>
+#include <ctime> 
+namespace sanjay9
+{
+void test_unordered_multimap(long& value)
+{
+	cout << "\ntest_unordered_multimap().......... \n";
+     
+unordered_multimap<long, string> c;
+char buf[10];
+
+clock_t timeStart = clock();
+    for(long i=0; i< value; ++i)
+    {
+    	try {
+    		snprintf(buf, 10, "%d", rand());
+			//multimap 不可使用 [] 進行 insertion 
+			// c.insert(pair<long,string>(i,buf));
+            c.insert(make_pair(i, buf));
+            
+		}
+		catch(exception& p) {
+			cout << "i=" << i << " " << p.what() << endl;	
+			abort();
+		}
+	}
+	cout << "milli-seconds : " << (clock()-timeStart) << endl;		
+	cout << "unordered_multimap.size()= " << c.size() << endl;	
+	cout << "unordered_multimap.max_size()= " << c.max_size() << endl;	//357913941	
+	
+long target = get_a_target_long();		
+    timeStart = clock();		
+auto pItem = c.find(target);								
+	cout << "c.find(), milli-seconds : " << (clock()-timeStart) << endl;		 
+	if (pItem != c.end())
+    	cout << "found, value=" << (*pItem).second << endl;
+  	else
+    	cout << "not found! " << endl;		
+}															 
+}
 
 ///主函数
 int main(){
     // sanjay1::test_array();
-    long size = 0;
-    cin >> size;
-    sanjay2::test_vector(size);
+    long size = 1000000;
+    // cin >> size;
+    // sanjay2::test_vector(size);
+    // sanjay3::test_list(size);
+    // sanjay4::test_forward_list(size);
+    // sanjay5::test_deque(size);
+    // sanjay6::test_multiset(size);
+    // sanjay7::test_multimap(size);
+    // sanjay8::test_unordered_multiset(size);
+    sanjay9::test_unordered_multimap(size);
     return 0;
 }
