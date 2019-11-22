@@ -644,12 +644,10 @@ clock_t timeStart = clock();
 		
 	__gnu_cxx::__mt_alloc<int> alloc5; 	
 	p = alloc5.allocate(1);  
-	alloc5.deallocate(p,1);  	
+	alloc5.deallocate(p,1);  	__gnu_cxx::bitmap_allocator<int> alloc6;  	
 			
-    __gnu_cxx::bitmap_allocator<int> alloc6;  	
-	p = alloc6.allocate(3);  
-	alloc6.deallocate(p,3);  	//我刻意令參數為 3, 但這有何意義!! 一次要 3 個 ints? 
-#endif 			
+    p = alloc6.allocate(3);  alloc6.deallocate(p,3);  	//我刻意令參數為 3, 但這有何意義!! 一次要 3 個 ints? 
+	#endif 			
 }															
 }
 
@@ -665,6 +663,7 @@ int main(){
     // sanjay6::test_multiset(size);
     // sanjay7::test_multimap(size);
     // sanjay8::test_unordered_multiset(size);
-    sanjay9::test_unordered_multimap(size);
+    //sanjay9::test_unordered_multimap(size);
+    cout << sizeof(list<int>) << endl;
     return 0;
 }
