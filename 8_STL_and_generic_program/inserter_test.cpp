@@ -8,6 +8,7 @@
 #include <string>
 #include <algorithm>
 #include <set>
+#include <list>
 
 using namespace std;
 
@@ -21,6 +22,23 @@ void test01(){
     copy(myints, myints + 7, my_vec.begin());
 
     for(auto e: my_vec){
+        cout << e << " ";
+    }
+    cout << endl;
+
+    list<int> foo, bar;
+    for(int i = 1; i <= 5; ++i){
+        foo.push_back(i);
+        bar.push_back(i * 10);
+    }
+
+    list<int>::iterator it = foo.begin();
+    advance(it, 3);
+
+    copy(bar.begin(), bar.end(), inserter(foo, it));// 从foo的it位置插入bar的元素, 但是不替换
+    
+
+    for(auto e: foo){
         cout << e << " ";
     }
     cout << endl;
