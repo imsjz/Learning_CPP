@@ -447,7 +447,7 @@ public:
     //! void  operator delete(void*);			//(1) 二擇一. 若(1)(2)並存,會有很奇怪的報錯 (摸不著頭緒)
 
 private:
-    Screen *next; //需要多一个指针来维护, 本来类中只有4个字节大小, 现在是12个字节, 内存对齐, 所以16个字节大小. 
+    Screen *next;             //需要多一个指针来维护, 本来类中只有4个字节大小, 现在是12个字节, 内存对齐, 所以16个字节大小.
     static Screen *freeStore; //静态变量来标识剩余的容量
     static const int screenChunk;
 
@@ -468,7 +468,7 @@ void *Screen::operator new(size_t size)
         freeStore = p =
             reinterpret_cast<Screen *>(new char[chunk]);
         //將分配得來的一大塊 memory 當做 linked list 般小塊小塊串接起來
-        for (; p != &freeStore[screenChunk - 1]; ++p) 
+        for (; p != &freeStore[screenChunk - 1]; ++p)
             p->next = p + 1;
         p->next = 0;
     }
@@ -507,6 +507,405 @@ void test_per_class_allocator_1()
 }
 } // namespace sanjay08
 
+//----------------------------------------------------
+#include <cstddef>
+#include <iostream>
+namespace sanjay09
+{
+//ref. Effective C++ 2e, item10
+//per-class allocator
+
+class Airplane
+{ //支援 customized memory management
+private:
+    struct AirplaneRep
+    {
+        unsigned long miles; //8
+        char type;
+    }; //16
+
+private:
+    union {
+        AirplaneRep rep; //此針對 used object
+        Airplane *next;  //此針對 free list
+    };                   //当内存还在内存时, 使用next, 当被new了之后, 使用rep
+
+public:
+    unsigned long getMiles() { return rep.miles; }
+    char getType() { return rep.type; }
+    void set(unsigned long m, char t)
+    {
+        rep.miles = m;
+        rep.type = t;
+    }
+
+public:
+    //重载operator new
+    static void *operator new(size_t size);
+    static void operator delete(void *deadObject, size_t size);
+
+private:
+    static const int BLOCK_SIZE;
+    static Airplane *headOfFreeList;
+};
+
+Airplane *Airplane::headOfFreeList = NULL;
+const int Airplane::BLOCK_SIZE = 512;
+
+void *Airplane::operator new(size_t size)
+{
+    //如果大小錯誤，轉交給 ::operator new() 当有继承关系的时候, 会出现大小出错
+    if (size != sizeof(Airplane))
+        return ::operator new(size);
+
+    Airplane *p = headOfFreeList;
+
+    //如果 p 有效，就把list頭部移往下一個元素
+    if (p)
+        headOfFreeList = p->next;
+    else
+    {
+        //free list 已空。配置一塊夠大記憶體，
+        //令足夠容納 BLOCK_SIZE 個 Airplanes
+        Airplane *newBlock = static_cast<Airplane *>(::operator new(BLOCK_SIZE * sizeof(Airplane)));
+        //組成一個新的 free list：將小區塊串在一起，但跳過
+        //#0 元素，因為要將它傳回給呼叫者。
+        for (int i = 1; i < BLOCK_SIZE - 1; ++i)
+            newBlock[i].next = &newBlock[i + 1];
+        newBlock[BLOCK_SIZE - 1].next = 0; //以null結束
+
+        // 將 p 設至頭部，將 headOfFreeList 設至
+        // 下一個可被運用的小區塊。
+        p = newBlock;
+        headOfFreeList = &newBlock[1];
+    }
+    return p;
+}
+
+// operator delete 接獲一塊記憶體。
+// 如果它的大小正確，就把它加到 free list 的前端
+void Airplane::operator delete(void *deadObject,
+                               size_t size)
+{
+    if (deadObject == 0)
+        return;
+    if (size != sizeof(Airplane))
+    {
+        ::operator delete(deadObject);
+        return;
+    }
+
+    Airplane *carcass =
+        static_cast<Airplane *>(deadObject);
+
+    carcass->next = headOfFreeList;
+    headOfFreeList = carcass;
+}
+
+//-------------
+void test_per_class_allocator_2()
+{
+    cout << "\ntest_per_class_allocator_2().......... \n";
+
+    cout << sizeof(Airplane) << endl; //16
+
+    size_t const N = 100;
+    Airplane *p[N];
+
+    for (int i = 0; i < N; ++i)
+        p[i] = new Airplane;
+
+    //隨機測試 object 正常否
+    p[1]->set(1000, 'A');
+    p[5]->set(2000, 'B');
+    p[9]->set(500000, 'C');
+    cout << p[1] << ' ' << p[1]->getType() << ' ' << p[1]->getMiles() << endl;
+    cout << p[5] << ' ' << p[5]->getType() << ' ' << p[5]->getMiles() << endl;
+    cout << p[9] << ' ' << p[9]->getType() << ' ' << p[9]->getMiles() << endl;
+
+    //輸出前 10 個 pointers, 用以比較其間隔
+    for (int i = 0; i < 10; ++i)
+        cout << p[i] << endl; //间隔16, 没有cookie
+
+    for (int i = 0; i < N; ++i)
+        delete p[i];
+}
+} // namespace sanjay09
+
+//----------------------------------------------------
+#include <complex>
+namespace sanjay10
+{
+
+//搞一个通用的内存分配类
+class allocator
+{
+private:
+    struct obj
+    {
+        struct obj *next; //embedded pointer
+    };
+
+public:
+    void *allocate(size_t);
+    void deallocate(void *, size_t);
+    void check();
+
+private:
+    obj *freeStore = nullptr;
+    const int CHUNK = 5; //小一點方便觀察
+};
+
+void *allocator::allocate(size_t size)
+{
+    obj *p;
+
+    if (!freeStore)
+    {
+        //linked list 是空的，所以攫取一大塊 memory
+        size_t chunk = CHUNK * size;
+        freeStore = p = (obj *)malloc(chunk);
+
+        //cout << "empty. malloc: " << chunk << "  " << p << endl;
+
+        //將分配得來的一大塊當做 linked list 般小塊小塊串接起來
+        for (int i = 0; i < (CHUNK - 1); ++i)
+        { //沒寫很漂亮, 不是重點無所謂.
+            p->next = (obj *)((char *)p + size);
+            p = p->next;
+        }
+        p->next = nullptr; //last
+    }
+    p = freeStore;
+    freeStore = freeStore->next;
+
+    //cout << "p= " << p << "  freeStore= " << freeStore << endl;
+
+    return p;
+}
+void allocator::deallocate(void *p, size_t)
+{
+    //將 deleted object 收回插入 free list 前端
+    ((obj *)p)->next = freeStore;
+    freeStore = (obj *)p;
+}
+void allocator::check()
+{
+    obj *p = freeStore;
+    int count = 0;
+
+    while (p)
+    {
+        cout << p << endl;
+        p = p->next;
+        count++;
+    }
+    cout << count << endl;
+}
+//--------------
+class Foo
+{
+public:
+    long L;
+    string str;
+    static allocator myAlloc;
+
+public:
+    Foo(long l) : L(l) {}
+    static void *operator new(size_t size)
+    {
+        return myAlloc.allocate(size);
+    }
+    static void operator delete(void *pdead, size_t size)
+    {
+        return myAlloc.deallocate(pdead, size);
+    }
+};
+allocator Foo::myAlloc;
+
+class Goo
+{
+public:
+    complex<double> c;
+    string str;
+    static allocator myAlloc;
+
+public:
+    Goo(const complex<double> &x) : c(x) {}
+    static void *operator new(size_t size)
+    {
+        return myAlloc.allocate(size);
+    }
+    static void operator delete(void *pdead, size_t size)
+    {
+        return myAlloc.deallocate(pdead, size);
+    }
+};
+allocator Goo::myAlloc;
+
+//-------------
+void test_static_allocator_3()
+{
+    cout << "\n\n\ntest_static_allocator().......... \n";
+
+    {
+        Foo *p[100];
+
+        cout << "sizeof(Foo)= " << sizeof(Foo) << endl;
+        for (int i = 0; i < 23; ++i)
+        { //23,任意數, 隨意看看結果
+            p[i] = new Foo(i);
+            cout << p[i] << ' ' << p[i]->L << endl;
+        }
+        //Foo::myAlloc.check();
+
+        for (int i = 0; i < 23; ++i)
+        {
+            delete p[i];
+        }
+        //Foo::myAlloc.check();
+    }
+
+    {
+        Goo *p[100];
+
+        cout << "sizeof(Goo)= " << sizeof(Goo) << endl;
+        for (int i = 0; i < 17; ++i)
+        { //17,任意數, 隨意看看結果
+            p[i] = new Goo(complex<double>(i, i));
+            cout << p[i] << ' ' << p[i]->c << endl;
+        }
+        //Goo::myAlloc.check();
+
+        for (int i = 0; i < 17; ++i)
+        {
+            delete p[i];
+        }
+        //Goo::myAlloc.check();
+    }
+}
+} // namespace sanjay10
+//----------------------------------------------------
+#include <complex>
+namespace sanjay11
+{
+using sanjay10::allocator;
+
+//下面借鉴MFC 的 macro定义
+// DECLARE_POOL_ALLOC -- used in class definition
+#define DECLARE_POOL_ALLOC()                                           \
+public:                                                                \
+    void *operator new(size_t size) { return myAlloc.allocate(size); } \
+    void operator delete(void *p) { myAlloc.deallocate(p, 0); }        \
+                                                                       \
+protected:                                                             \
+    static allocator myAlloc;
+
+// IMPLEMENT_POOL_ALLOC -- used in class implementation file
+#define IMPLEMENT_POOL_ALLOC(class_name) \
+    allocator class_name::myAlloc;
+
+// in class definition file
+class Foo
+{
+    DECLARE_POOL_ALLOC()
+public:
+    long L;
+    string str;
+
+public:
+    Foo(long l) : L(l) {}
+};
+//in class implementation file
+IMPLEMENT_POOL_ALLOC(Foo)
+
+//  in class definition file
+class Goo
+{
+    DECLARE_POOL_ALLOC()
+public:
+    complex<double> c;
+    string str;
+
+public:
+    Goo(const complex<double> &x) : c(x) {}
+};
+//in class implementation file
+IMPLEMENT_POOL_ALLOC(Goo)
+
+void test_macros_for_static_allocator()
+{
+    cout << "\n\n\ntest_macro_for_static_allocator().......... \n";
+
+    Foo *pF[100];
+    Goo *pG[100];
+
+    cout << "sizeof(Foo)= " << sizeof(Foo) << endl;
+    cout << "sizeof(Goo)= " << sizeof(Goo) << endl;
+
+    for (int i = 0; i < 23; ++i)
+    { //23,任意數, 隨意看看結果
+        pF[i] = new Foo(i);
+        pG[i] = new Goo(complex<double>(i, i));
+        cout << pF[i] << ' ' << pF[i]->L << "\t";
+        cout << pG[i] << ' ' << pG[i]->c << "\n";
+    }
+
+    for (int i = 0; i < 23; ++i)
+    {
+        delete pF[i];
+        delete pG[i];
+    }
+}
+} // namespace sanjay11
+
+//----------------------------------------------------
+namespace sanjay12
+{
+
+class Foo
+{
+public:
+    long _x;
+
+public:
+    Foo(long x = 0) : _x(x) {}
+
+    // static void *operator new(size_t size) = default; 
+    // static void operator delete(void *pdead, size_t size) = default;  //cannot be defaulted
+    static void *operator new[](size_t size) = delete;
+    static void operator delete[](void *pdead, size_t size) = delete;
+};
+
+class Goo
+{
+public:
+    long _x;
+
+public:
+    Goo(long x = 0) : _x(x) {}
+
+    static void *operator new(size_t size) = delete;
+    static void operator delete(void *pdead, size_t size) = delete;
+};
+
+void test_delete_and_default_for_new()
+{
+    cout << "\n\n\ntest_delete_and_default_for_new().......... \n";
+
+    Foo *p1 = new Foo(5); //因为不允许设置为default, 所以可以
+    delete p1; //同上
+    
+    // Foo* p2 = new Foo[5]; //delete 掉了
+    // delete[] p2;
+
+    //! Goo* p2 = new Goo(7);	//[Error] use of deleted function 'static void* jj12::Goo::operator new(size_t)'
+    //!	delete p2;				//[Error] use of deleted function 'static void jj12::Goo::operator delete(void*, size_t)'
+    Goo *pG = new Goo[10];
+    delete[] pG;
+}
+} // namespace sanjay12
+
 int main()
 {
 
@@ -516,6 +915,9 @@ int main()
     // sanjay06::test_overload_operator_new_and_array_new();
     // sanjay07::test_overload_placement_new();
     // cout << sizeof(sanjay08::Screen) << endl;
-    sanjay08::test_per_class_allocator_1();
+    // sanjay08::test_per_class_allocator_1();
+    // sanjay09::test_per_class_allocator_2();
+    // sanjay11::test_macros_for_static_allocator();
+    sanjay12::test_delete_and_default_for_new();
     return 0;
 }
