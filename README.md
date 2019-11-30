@@ -24,4 +24,9 @@ tencent员工写的书，看的代码笔记也加进来
 修改`3_CPP_Primer5`文件夹, 让其可以访问<br>
 增加`8_STL_and_generic_program`, 该文件夹主要存放侯捷大师讲解的STL泛型编程代码实例
 
-
+---
+2019.11.30
+<br>更新:<br>
+增加`9_Memory_management`, 没有学习完, 太难了...以后再回来学习吧.<br>
+增加`10_C++11_new_features`<br>
+增加`BoolanStudy`, 里面都是一些代码和pdf
