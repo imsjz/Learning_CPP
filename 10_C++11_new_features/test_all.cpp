@@ -242,10 +242,12 @@ void test34_alias_template()
 //===================
 #include <string>
 #include <iterator>
-namespace sanjay04{
+namespace sanjay04
+{
 
-template<typename T>
-void output_static_data(const T& obj){
+template <typename T>
+void output_static_data(const T &obj)
+{
     cout << "..." << endl;
 }
 
@@ -269,10 +271,12 @@ const int SIZE = 10000;
 
 //换一个折中的方法:
 //test_moveable(list<string>());
-template<typename Container>
-void test_moveable(Container c){
-typedef typename iterator_traits<typename Container::iterator>::value_type Valtype;
-    for(long i = 0; i < SIZE; ++i){
+template <typename Container>
+void test_moveable(Container c)
+{
+    typedef typename iterator_traits<typename Container::iterator>::value_type Valtype;
+    for (long i = 0; i < SIZE; ++i)
+    {
         c.insert(c.end(), Valtype()); //插入类对象
     }
     output_static_data(*(c.begin()));
@@ -281,10 +285,134 @@ typedef typename iterator_traits<typename Container::iterator>::value_type Valty
     c1.swap(c2);
 }
 
-void test2(){
+void test2()
+{
     test_moveable(list<string>());
 }
+
+template <typename T,
+          template <typename>
+          class Container>
+class XCls
+{
+private:
+    Container<T> c;
+
+public:
+    XCls()
+    { //constructor
+        for (long i = 0; i < SIZE; ++i)
+        {
+            c.insert(c.end(), T());
+        }
+        output_static_data(T());
+        Container<T> c1(c);
+        Container<T> c2(std::move(c));
+        c1.swap(c2);
+    }
+};
+
+template <typename T>
+using Vec = vector<T, allocator<T>>;
+
+} // namespace sanjay04
+
+//---------------------------------------------------
+//http://en.cppreference.com/w/cpp/language/type_alias
+namespace sanjay05
+{
+
+// type alias, identical to
+// typedef void (*func)(int, int);
+using func = void (*)(int, int);
+
+// the name 'func' now denotes a pointer to function:
+void example(int, int) {}
+func fn = example;
+
+// type alias used to hide a template parameter
+template <class CharT>
+using mystring =
+    std::basic_string<CharT, std::char_traits<CharT>>;
+mystring<char> str;
+//其實在 <string>, <string_fwd.h> 都有以下 typedef
+// typedef basic_string<char>   string;
+
+// type alias can introduce a member typedef name
+template <typename T>
+struct Container
+{
+    using value_type = T; //equals to typedef T value_type;
+};
+// which can be used in generic programming
+template <typename Container>
+void fn2(const Container &c)
+{
+    typename Container::value_type n;
 }
+
+void test48_type_alias()
+{
+    cout << "\ntest48_type_alias().......\n";
+
+    Container<int> c;
+    fn2(c); // Container::value_type will be int in this function
+}
+} // namespace sanjay05
+//---------------------------------------------------
+#include <map>
+namespace sanjay06
+{
+    //test noexcept
+    double div(double a, double b) noexcept{
+        return a / b; //用了noexcept, 即使除数是0都不会抛出异常
+    }
+
+    class Base{
+    public:
+        virtual void vfunc(float) {}
+    };
+    class Derived1 : Base{
+    public:
+        virtual void vfunc(int) final{} //参数不同, 以为是子类重新写了一个函数
+    };
+    class Derived2 final: Base{ //加了final, 不让继承
+    public:
+        // virtual void vfunc(int) override{} //加了override, 编译器会帮你检查
+        virtual void vfunc(float) override final{} //函数加了final, 不让重写
+    };
+    // class Derived3 : Derived2{ // cannot derive from ‘final’ base ‘sanjay06::Derived2’ in derived type ‘sanjay06::Derived3’
+    // public:
+    //     // virtual void vfunc(int) override{} //加了override, 编译器会帮你检查
+    //     virtual void vfunc(float) override{}
+    // };
+    // class Derived3 final: Derived1{ //加了final, 不让继承
+    // public:
+    //     void vfunc(int){} //不让重写
+    // };
+    
+    
+    //测试decltype
+    
+map<string, float> coll;
+    //before
+    map<string, float>::value_type elem; //pair
+    //2.0
+    decltype(coll)::value_type elem1;
+    //用法1: 用在返回值
+    // template<typename T1, typename T2>
+    // decltype(x+y) add(T1 x, T2 y); //有时候会造成困扰, 因为编译器从左到右的时候看不到x+y
+    //因此换一种写法:
+    template<typename T1, typename T2>
+    auto add(T1 x, T2 y) ->decltype(x + y){ //刚才测试只用auto也可以..
+        cout << x + y << endl;
+        return x + y;
+    };
+    //用法2: 之前在类模板或函数模板中, 传入的模板都是T t; t是一个对象, 因此之前用的是: typedef typename T::iterator iType;
+    //现在可以直接从对象中拿到类型了: typedef decltype(t)::iterator iType;
+
+} // namespace sanjay06
+
 
 int main(int argc, char *argv[])
 {
@@ -292,7 +420,16 @@ int main(int argc, char *argv[])
     //sanjay02::test04_explicit_multiple_argument_ctor();
     // sanjay03::test34_alias_template();
     // sanjay04::test();
-    sanjay04::test2();
+    // sanjay04::test2();
+    // using sanjay04::Vec;
+    // using sanjay04::XCls;
+    // XCls<string, Vec> c1;
+
+    // double c = sanjay06::div(10, 0);
+    // cout << c << endl;
+    int c = sanjay06::add(2, 3);
+    // cout << decltype(c) << endl; //这样肯定不行啊, 因为decltype(c) 得到的是int, 你能cout << int << endl;吗
+    //肯定不行!
 
     return 0;
 }
