@@ -70,6 +70,8 @@ public:
     }
 };
 
+
+//这里是暴露给客户端的接口
 int main(int argc, char const *argv[])
 {
     CashContext *cc = nullptr;
