@@ -1,3 +1,8 @@
+/*
+ * @Author: sanjayzhong
+ * @Github: https://github.com/sanjayzzzhong
+ * @Date: 2019-12-03 16:58:59
+ */
 
 //数据库访问有关的基类
 class IDBConnection{
@@ -75,7 +80,7 @@ class EmployeeDAO{
 public:
     vector<EmployeeDO> GetEmployees(){
         IDBConnection* connection =
-            dbConnectionFactory->CreateDBConnection();
+            dbConnectionFactory->CreateDBConnection(); 
         connection->ConnectionString("...");
 
         IDBCommand* command =
