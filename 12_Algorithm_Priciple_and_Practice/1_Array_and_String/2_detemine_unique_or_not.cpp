@@ -3,6 +3,7 @@
  * @Github: https://github.com/sanjayzzzhong
  * @Date: 2019-12-07 18:33:28
  */
+
 #include <iostream>
 #include <string>
 using namespace std;
@@ -106,6 +107,61 @@ namespace example3
     }
 } // namespace example3
 
+#include <algorithm>
+namespace example4
+{
+    //############################################//
+    //################   例子4   ####################//
+    //############################################//
+    // Anagram
+    // Write a method anagram(s,t) to decide if two strings are anagrams or
+    // not.
+    // Example
+    // Given s="abcd", t="dcab", return true.
+    // Challenge
+    // O(n) time, O(1) extra space 
+    
+    bool anagram_1(string s, string t){
+        //s: source
+        //t: target
+        if(s.empty() || t.empty()){
+            return false;
+        }
+        if(s.size() != t.size()){
+            return false;
+        }
+        int letter_count[256] = {0};
+        for(int i = 0; i < s.size(); ++i){
+            ++letter_count[s[i]];
+            --letter_count[t[i]];
+        }
+        for(int i = 0; i < s.size(); ++i){
+            if(letter_count[i] < 0){
+                return false;
+            }
+        }
+        return true;
+
+    }
+    bool anagram_2(string s, string t){
+        if(s.empty() || s.empty()){
+            return false; //如果两个都为空默认为false
+        }
+        if(s.size() != t.size()){
+            return false;
+        }
+        sort(s.begin(), s.end());
+        sort(t.begin(), t.end()); //就地操作, 空间复杂度O(1)
+        if(s == t){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+} // namespace example4
+
+
 
 int main(int argc, char const *argv[])
 {
@@ -120,6 +176,10 @@ int main(int argc, char const *argv[])
     // cout << "str1 vs str2 " << example2::isPermutation(str1, str2) << endl;
     // cout << "str1 v2 str3 " << example2::isPermutation(str1, str3) << endl;
 
-    cout << "str1 str2 " << example3::canCompose(str1, str3) << endl; // true 1
+    // cout << "str1 str2 " << example3::canCompose(str1, str3) << endl; // true 1
+    time_t start = time(nullptr);
+    cout << example4::anagram_2(str1, str2) << endl;
+    time_t end = time(nullptr);
+    cout << example4::anagram_1("", "") << endl; //0
     return 0;
 }
