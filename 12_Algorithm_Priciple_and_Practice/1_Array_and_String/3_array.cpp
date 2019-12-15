@@ -86,6 +86,153 @@ namespace example2
 
 } // namespace example2
 
+// 两个排好序的数组，A和B， 需要把这两个都放进A里，假设A有足够的空间，按照大小序列
+// A 和 B都是从小到大排序
+namespace example3
+{
+    class Solution{
+    public:
+        void MergeSortedArray(int A[], int m, int B[], int n){
+            int len = m + n;
+            //从后往前填充,如果从前往后的话A的值会被覆盖掉
+            while(m > 0 && n > 0){
+                if(A[m-1] > B[n-1]){
+                    A[--len] = A[--m];
+                }else{
+                    A[--len] = B[--n];
+                }
+            }
+            //当其中一个变为0了之后
+            while(m > 0){
+                A[--len] = A[--m];
+            }
+            while(n > 0){
+                A[--len] = B[--n];
+            }
+        }
+    };
+    
+} // namespace example3
+
+namespace example4
+{
+    // Partition
+    // Given an array nums of integers and an int k, partition the array
+    // (i.e move the elements in "nums") such that:
+    // All elements < k are moved to the left
+    // All elements >= k are moved to the right
+    // Return the partitioning index, i.e the first index i nums[i] >= k.
+    // Example
+    // If nums=[3,2,2,1] and k=2, a valid answer is 1.
+    // If all elements in nums are smaller than k, then return nums.length
+    // Challenge
+    // Can you partition the array in-place and in O(n)?
+    class Solution{
+    public:
+        //第一种解法: 用一个right来标记,用i来跑数组判断
+        //空间复杂度1,时间复杂度n
+        int partitionArray1(vector<int>& nums, int k){
+            int right = 0; //一开始默认这个区分下标为0
+            for(int i = 0; i < nums.size(); ++ i){
+                //这个判断条件很重要
+                if(nums.at(i) < k && i > right){
+                    //如果i所在的值小于k,那么就要置换,同时right自增1
+                    int temp = nums.at(i);
+                    nums.at(i) = nums.at(right);
+                    nums.at(right) = temp;
+                    ++right;
+                }
+            }
+            return right;
+        }
+        //第二种解法: 用快速排序的方法做,但是不需要用到递归
+        int partitionArray2(vector<int>& nums, int k){
+            int i = 0, j = nums.size() - 1;
+            while(i <= j){
+
+                while(i <= j && nums[i] < k) ++i;
+                while(i <= j && nums[j] >= k) --j;
+                if(i <= j){
+                    int temp = nums[i];
+                    nums[i] = nums[j];
+                    nums[j] = temp;//交换
+                    ++i;
+                    --j;
+                }
+            }
+            return i;
+        }
+    };
+    
+} // namespace example4
+
+namespace example5
+{
+    class Solution{
+    public:
+        int findMedian(vector<int>& nums){
+            if(nums.empty()) return 0;
+            int len = nums.size();
+            return helper(nums, 0, len - 1, (len + 1)/ 2); //最后一个参数+1是为了处理奇数和偶数情况,+1可以让两者除于2的情况相同
+        }
+
+    
+        //nums: 数组
+        //l: 数组左下标, r右下标, size 数组大小
+        int helper(vector<int>& nums, int l, int r, int size){
+            int pivot = findPivot(nums, l, r); //the index of pivot
+
+            if((pivot - l + 1) == size){
+                return nums[pivot];
+            }
+            else if((pivot - l + 1) > size){
+                return helper(nums, l, pivot - 1, size);
+            }
+            else{
+                return helper(nums, pivot + 1, r, size - (pivot - l + 1));
+            }
+            
+        }
+        int findPivot(vector<int>& nums, int l, int r){
+            if(nums.empty()) return 0;
+            int temp = nums.at(l); //用temp保存坑的值
+            while(l < r){ //不能包含=
+                while(l < r && nums.at(r) > temp) --r;
+                if(l < r){
+                    nums.at(l) = nums.at(r);
+                    ++l;
+                }
+                while(l < r && nums.at(l) <= temp) ++l;
+                if(l < r){
+                    nums.at(r) = nums.at(l);
+                    --r;
+                }
+            }
+            nums.at(l) = temp;
+            return l;
+        }
+    };
+    
+} // namespace example5
+
+
+template <typename T>
+void print_array(T t){
+    typedef typename T::iterator iter;
+    for(iter it = t.begin(); it != t.end(); ++it){
+        cout << *it << " ";
+    }
+    cout << endl;
+}
+
+//数组的
+template <typename T>
+void print_array(T t, int size){
+    for(int i = 0; i < size; ++i){
+        cout << t[i] << " ";
+    }
+    cout << endl;
+}
 
 
 int main(int argc, char const *argv[])
@@ -106,12 +253,33 @@ int main(int argc, char const *argv[])
     //     cout << arr[i] << ' ';
     // }
     // cout << endl;
-    vector<int> num{1,1,2};
-    example2::Solution* sln = new example2::Solution;
-    int len = sln->removeDuplicates(num);
-    for(int i = 0; i < len; ++i){
-        cout << num.at(i) << " ";
-    }
-    cout << endl;
+    // vector<int> num{1,1,2};
+    // example2::Solution* sln = new example2::Solution;
+    // int len = sln->removeDuplicates(num);
+    // for(int i = 0; i < len; ++i){
+    //     cout << num.at(i) << " ";
+    // }
+    // cout << endl;
+    // int A[9] = {1,3,5,7};
+    // int B[5] = {0,2,4,6,8};
+    // example3::Solution sln;
+    // sln.MergeSortedArray(A, 4, B, 5);
+    // for(auto e: A){
+    //     cout << e << " ";
+    // }
+    // cout << endl;
+    // vector<int> num = {3,2,2,1,4,5,63,3,2};
+    // print_array(num);
+    // // int nums[] = {1,2,3,3};
+    // // print_array(nums, 4);
+    // example4::Solution sln;
+    // int index = sln.partitionArray2(num, 3);
+    // cout << index << endl;
+    // print_array(num);
+    vector<int> nums = {4,5,1,2,3};
+    example5::Solution sln;
+    // sln.findPivot(nums, 0, 4);
+    // print_array(nums);
+    cout << sln.findMedian(nums) << endl;
     return 0;
 }
