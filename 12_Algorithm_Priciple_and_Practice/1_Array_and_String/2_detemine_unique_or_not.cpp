@@ -161,6 +161,138 @@ namespace example4
     }
 } // namespace example4
 
+#include <vector>
+// Find a pair of two elements in an array, whose sum is a given target
+// number.
+// 最直观的⽅法是再次扫描数组，判断target – array[i]是否存在在数组中。
+// 这样做的时间复杂度是O(n^2)
+// 如何保存之前的处理结果？可以使⽤hash table “target – array[i]是否存
+// 在在数组中
+// 复杂度分析：数组中的每个元素进⾏上述hash处理，从头⾄尾扫描数组，判断对
+// 应的另⼀个数是否存在在数组中，时间复杂度O(n )
+namespace example5
+{
+    vector<int> addsToTarget(vector<int>& numbers, int target){
+        unordered_map<int, int> num_to_index; //first 存数字, second存下标
+        vector<int> vi(2);
+        for(vector<int>::const_iterator it = numbers.cbegin(); it != numbers.cend(); ++it){
+            if(num_to_index.count(target - *it)){
+                vi.at(0) = num_to_index[target - *it] + 1; //位置
+                vi.at(1) = (int)(it - numbers.cbegin()) + 1;
+            }
+            num_to_index[*it] = (int)(it - numbers.cbegin());
+        }
+        return vi;
+    }
+} // namespace example5
+
+#include <cstring>
+namespace example6
+{
+    //############################################//
+    //################   例子6   ####################//
+    //############################################//
+    //     Reverse Words in String
+    // Given input -> "I have 36 books, 40 pens2."; output -> "I evah 36
+    // skoob, 40 2snep.”
+    // 解题分析：
+    // 每个以空格或符号为间隔的单词逆向输出，如果遇到纯数字，则不改变顺序。⾃
+    // 然⽽然地，每次处理分为两个步骤： 1)判断是否需要逆向 2)逆向当前单词。这样
+    // 就可以分为两个⼦函数：⼀个负责判断，另⼀个负责逆向。然后进⾏分段处理。
+    bool isPunctuationOrSpace(char* charactor){
+        if(*charactor == ' ' || *charactor == ',' || *charactor == '.'){
+            return true;
+        }
+    }
+    bool isNumber(char *charactor){
+        if(*charactor >= '0' && *charactor <= '9'){
+            return true;
+        }
+    }
+
+    bool needReverse(char* sentence, int* offset){
+        int length = (int)strlen(sentence);
+        bool reverse_flag = false;
+        *offset = 0;
+        //当不是标号和空格, 且偏移小于句子长度时
+        while(!isPunctuationOrSpace(sentence + (*offset)) && (*offset) < length){
+            //并且不是数字的时候
+            if(!isNumber(sentence + (*offset))){
+                reverse_flag = true; //把这个标志设为true
+            }
+            //继续偏移
+            (*offset)++;
+        }
+        return reverse_flag;
+    }
+
+    void reverseWord(char* word, int length){
+        int i = 0, j = length - 1; //下标从0开始, 所以length需要-1
+        while(i < j){
+            swap(*(word + i), *(word + j)); //引用交换
+            ++i;
+            --j;
+        }
+    }
+
+    char* reverseSentence(char* sentence){
+        int length = (int)strlen(sentence);
+        int offset;
+        for(int i = 0; i < length; ){
+            //传入指针
+            if(needReverse(sentence + i, &offset)){
+                reverseWord(sentence + i, offset);
+            }
+            i += (offset + 1);
+        }
+        return sentence;
+    }
+} // namespace example6
+
+namespace example7
+{
+    //############################################//
+    //################   例子7   ####################//
+    //############################################//
+    // Rotate String
+    // Given a string and an offset, rotate string by offset. (rotate from left to
+    // right)
+    // Example
+    // Given "abcdefg"
+    // for offset=0, return "abcdefg"
+    // for offset=1, return "gabcdef"
+    // 考虑offset大于原先字符串大小的情况：取模
+    // 通过分三次逆序，置换前后
+    class Solution{
+    public:
+        string rotateString(string A, int offset){
+            if(A.empty() || offset == 0){
+                return A;
+            }
+            int len = A.size();
+            //考虑offset可能会大于len，于是取模
+            offset %= len;
+            my_reverse(A, 0, len - offset - 1);
+            my_reverse(A, len - offset, len - 1);
+            my_reverse(A, 0, len - 1);
+            return A;
+        }
+    private:
+        void my_reverse(string& str, int start, int end){
+            while(start < end){
+                char temp = str.at(start);
+                str.at(start) = str.at(end);
+                str.at(end) = temp;
+                ++start;
+                --end;
+            }
+        }
+    };
+    
+} // namespace example7
+
+
+
 
 
 int main(int argc, char const *argv[])
@@ -177,9 +309,24 @@ int main(int argc, char const *argv[])
     // cout << "str1 v2 str3 " << example2::isPermutation(str1, str3) << endl;
 
     // cout << "str1 str2 " << example3::canCompose(str1, str3) << endl; // true 1
-    time_t start = time(nullptr);
-    cout << example4::anagram_2(str1, str2) << endl;
-    time_t end = time(nullptr);
-    cout << example4::anagram_1("", "") << endl; //0
+    // time_t start = time(nullptr);
+    // cout << example4::anagram_2(str1, str2) << endl;
+    // time_t end = time(nullptr);
+    // cout << example4::anagram_1("", "") << endl; //0
+
+    // vector<int> array{1,3,7,3,4,5,6};
+    // vector<int> result = example5::addsToTarget(array, 10);
+    // for(auto e: result){
+    //     cout << e << endl;
+    // }
+    // char str[] = "I have 36 books, 40 pens2."; //用数组,可以修改, 不要用指针指向字符串, 改不动
+    // example6::reverseSentence(str);
+    // cout << str << endl;
+    string str = "i have a pencil";
+    example7::Solution* sln = new example7::Solution;
+    string offset_str = sln->rotateString(str, 6);
+    cout << offset_str << endl;
+    
+
     return 0;
 }

@@ -35,6 +35,7 @@ LazySingleton *LazySingleton::getInstance() //要用的时候才创建实例
 }
 
 //饿汉模式: 一用实例就创建好了, 创建比较慢, 用比较快
+//这个模式比较好, 不会引起线程安全问题
 class HungrySingleton
 {
 public:
