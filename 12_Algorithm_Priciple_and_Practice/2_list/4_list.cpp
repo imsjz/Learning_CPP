@@ -218,6 +218,25 @@ namespace example4
     
 } // namespace example4
 
+//############################################//
+//################   example5: rotate   ####################//
+//############################################//
+// Given a list, rotate the list to the right by k places, where k is non-negative
+// eg. list = 10->20->30->40->50->60;
+// 当k = 4;
+// list变为50->60->10->20->30->40;
+namespace example4
+{
+class Solution{
+public:
+    void rotate(ListNode** head_ref, int k){
+
+    }
+};
+} // namespace example4
+
+
+
 
 
 int main(int argc, char *argv[])
