@@ -136,32 +136,38 @@ public:
 // 了。
 namespace example3
 {
-    class Solution{
-    public:
-        ListNode* partition(ListNode* head, int x){
-            if(head == nullptr) return nullptr;
-            ListNode* dummy_left = new ListNode(0);
-            ListNode* left = dummy_left;
-            ListNode* dummy_right = new ListNode(0);
-            ListNode* right = dummy_right;
-            while(head){
-                if(head->val < x){
-                    left->next = head;
-                    left = left->next;
-                }
-                else{
-                    right->next = head;
-                    right = right->next;
-                }
-                head = head->next;
+class Solution
+{
+public:
+    ListNode *partition(ListNode *head, int x)
+    {
+        if (head == nullptr)
+            return nullptr;
+        ListNode *dummy_left = new ListNode(0);
+        ListNode *left = dummy_left;
+        ListNode *dummy_right = new ListNode(0);
+        ListNode *right = dummy_right;
+        while (head)
+        {
+            if (head->val < x)
+            {
+                left->next = head;
+                left = left->next;
             }
-            right->next = nullptr;
-            left->next = dummy_right->next;
-            delete dummy_right;
-            return dummy_left->next;
+            else
+            {
+                right->next = head;
+                right = right->next;
+            }
+            head = head->next;
         }
-    };
-    
+        right->next = nullptr;
+        left->next = dummy_right->next;
+        delete dummy_right;
+        return dummy_left->next;
+    }
+};
+
 } // namespace example3
 
 //############################################//
@@ -180,42 +186,50 @@ namespace example3
 // 出发
 namespace example4
 {
-    class Solution{
-    public:
-        ListNode* midPoint(ListNode* head){
-            if(head == nullptr) return nullptr;
-            ListNode* runner = head;
-            ListNode* chaser = head;
-            while(runner->next && runner->next->next){
-                runner = runner->next->next;
-                chaser = chaser->next;
-            }
-            return chaser;
+class Solution
+{
+public:
+    ListNode *midPoint(ListNode *head)
+    {
+        if (head == nullptr)
+            return nullptr;
+        ListNode *runner = head;
+        ListNode *chaser = head;
+        while (runner->next && runner->next->next)
+        {
+            runner = runner->next->next;
+            chaser = chaser->next;
+        }
+        return chaser;
+    }
+
+    ListNode *findkthtoLast(ListNode *head, int k)
+    {
+        ListNode *runner = head;
+        ListNode *chaser = head;
+
+        if (head == nullptr || k < 0)
+        {
+            return nullptr;
         }
 
-        ListNode* findkthtoLast(ListNode* head, int k){
-            ListNode* runner = head;
-            ListNode* chaser = head;
-
-            if(head == nullptr || k < 0){
-                return nullptr;
-            }
-
-            for(int i = 0; i < k; ++i){
-                runner = runner->next;
-            }
-            if(runner == nullptr){
-                return nullptr;
-            }
-            while(runner->next){ //为什么要判断next，因为如果下一个next为空，这时候刚好就是倒数第k个了
-                runner = runner->next;
-                chaser = chaser->next;
-                
-            }
-            return chaser;
+        for (int i = 0; i < k; ++i)
+        {
+            runner = runner->next;
         }
-    };
-    
+        if (runner == nullptr)
+        {
+            return nullptr;
+        }
+        while (runner->next)
+        { //为什么要判断next，因为如果下一个next为空，这时候刚好就是倒数第k个了
+            runner = runner->next;
+            chaser = chaser->next;
+        }
+        return chaser;
+    }
+};
+
 } // namespace example4
 
 //############################################//
@@ -225,19 +239,77 @@ namespace example4
 // eg. list = 10->20->30->40->50->60;
 // 当k = 4;
 // list变为50->60->10->20->30->40;
-namespace example4
+namespace example5
 {
-class Solution{
+class Solution
+{
 public:
-    void rotate(ListNode** head_ref, int k){
+    void rotate(ListNode **head_ref, int k)
+    {
+        if (k == 0)
+        {
+            return; //处理异常，如果k=0，链表不变
+        }
+        //取链表当前节点
+        ListNode *cur_node = *head_ref;
+        int count = 1;
+        while (count < k && cur_node != nullptr)
+        {
+            ++count;
+            cur_node = cur_node->next;
+        }
+        if (cur_node == nullptr)
+        {
+            return;
+        }
+        //保存第k个节点
+        ListNode *kth_node = cur_node;
+        while (cur_node->next)
+        {
+            cur_node = cur_node->next;
+        }
 
+        cur_node->next = *head_ref;
+        *head_ref = kth_node->next;
+        kth_node->next = nullptr;
     }
 };
-} // namespace example4
+} // namespace example5
 
+//############################################//
+//################   从以下开始不用namespace了，直接用一个函数就很直观   ####################//
+//############################################//
+// Reverse Linked List
+// Reverse the linked list and return the new head.
+// 循环遍历linked-list, 每次只处理当前指针的next 变量
+//1.非递归方法
+ListNode* reverseList(ListNode* head){
+    ListNode* prev_node = nullptr;
+    while(head){ //如果需要搞最后一个，就使用head
+        ListNode* curr_node = head;
+        head = head->next;
+        curr_node->next = prev_node;
+        prev_node = curr_node;
+    }
+    return prev_node;
+}
 
+//2. 递归方法
+ListNode* reverseListinRecursize(ListNode* head){
+    if(head == nullptr){
+        return head;
+    }
+    if(head->next == nullptr){
+        return head;
+    }
+    ListNode* new_head = reverseListinRecursize(head->next); //这里是处理好的
+    //这里处理最后两个
+    //走到这里的话，就是只有两个节点了
+    head->next->next = head;
+    head->next = nullptr;
 
-
+    return new_head;
+}
 
 int main(int argc, char *argv[])
 {
@@ -275,13 +347,23 @@ int main(int argc, char *argv[])
     // ListNode* p_list = sln3.partition(l1, 6);
     // ListNode::print_node_val(p_list);
 
-    example4::Solution sln4;
-    ListNode* p_min = sln4.midPoint(l1);
-    cout << p_min->val << endl;
-    cout << endl;
+    // example4::Solution sln4;
+    // ListNode* p_min = sln4.midPoint(l1);
+    // cout << p_min->val << endl;
+    // cout << endl;
 
-    ListNode* k_p = sln4.findkthtoLast(l1,1);
-    cout << k_p->val << endl;
+    // ListNode* k_p = sln4.findkthtoLast(l1,1);
+    // cout << k_p->val << endl;
+
+    // example5::Solution sln5;
+    // sln5.rotate(&l1, 4);
+    // ListNode::print_node_val(l1);
+
+    // l1 = reverseList(l1);
+    // ListNode::print_node_val(l1);
+
+    l1 = reverseListinRecursize(l1);
+    ListNode::print_node_val(l1);
 
     return 0;
 }
