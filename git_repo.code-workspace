@@ -2,6 +2,9 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "/Users/sanjay/git_repo/sync_files/code"
 		}
 	]
 }
