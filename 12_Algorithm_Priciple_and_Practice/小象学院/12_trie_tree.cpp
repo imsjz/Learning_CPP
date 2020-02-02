@@ -51,10 +51,73 @@ vector<string>& word_list){
     }
 }
 
+class TrieTree{
+public:
+    ~TrieTree(){
+        for(int i = 0; i < _node_vec.size(); ++i){
+            delete _node_vec[i];
+        }
+    }
 
+    void insert(const char* word);
+    TrieNode* root();
+    bool searchWord(const char* word);
+    bool isStartWith(const char* prefix);
+    
 
-int main(int argc, char* argv[]){
+private:
+    TrieNode _root;
+    vector<TrieNode*> _node_vec; //用这个更好回收内存   
+    TrieNode* new_node(){
+        TrieNode* node = new TrieNode();
+        _node_vec.push_back(node);
+        return node;
+    }
+};
 
+void TrieTree::insert(const char* word){
+    TrieNode* ptr = &_root;
+    while(*word){
+        int pos = *word - 'a';
+        if(!ptr->child[pos]){
+            ptr->child[pos] = new_node();
+        }
+        ptr = ptr->child[pos];
+        ++word;
+    }
+    ptr->is_end = true;
+}
+
+TrieNode* TrieTree::root(){
+    return &_root;
+}
+
+bool TrieTree::searchWord(const char* word){
+    TrieNode* ptr = &_root;
+    while(*word){
+        int pos = *word - 'a';
+        if(!ptr->child[pos]){
+            return false;
+        }
+        ptr = ptr->child[pos];
+        ++word;
+    }
+    return ptr->is_end;
+}
+bool TrieTree::isStartWith(const char* prefix){
+    TrieNode* ptr = &_root;
+    while(*prefix){
+        int pos = *prefix - 'a';
+        if(!ptr->child[pos]){
+            return false;
+        }
+        ptr = ptr->child[pos];
+        ++prefix;
+    }
+    return true;
+}
+
+void test1(){
     TrieNode root;
     TrieNode n1;
     TrieNode n2;
@@ -96,6 +159,38 @@ int main(int argc, char* argv[]){
     for(string ele : word_list){
         cout << ele << endl;
     }
+}
+
+void test2(){
+    TrieTree tree;
+    tree.insert("abc");
+    tree.insert("abcd");
+
+    vector<string> word_list;
+    string word;
+    get_all_word_from_trie(tree.root(), word, word_list);
+    for(string ele : word_list){
+        cout << ele << endl;
+    }
+
+    cout << tree.searchWord("abc") << endl;
+    cout << tree.searchWord("ab") << endl;
+
+    cout << tree.isStartWith("ab") << endl;
+    cout << tree.isStartWith("cd") << endl;
+}
+
+
+
+int main(int argc, char* argv[]){
+
+    test2();
+
+
+
+
+
+
     
     return 0;
 }
