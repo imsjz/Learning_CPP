@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/2_source_and_header.cpp/fun.h
+
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/2_source_and_header.cpp/main.cpp
+iostream
+-
+vector
+-
+fun.h
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/2_source_and_header.cpp/fun.h
+

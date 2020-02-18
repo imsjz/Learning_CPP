@@ -1,0 +1,14 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/3_include_subdirectory/math/fun.cpp
+fun.h
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/3_include_subdirectory/math/fun.h
+
+/Users/sanjay/git_repo/9_Learning_CPP/16_cmake/3_include_subdirectory/math/fun.h
+
